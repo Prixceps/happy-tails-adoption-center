@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { petData } from "@/data/petData";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import emailjs from '@emailjs/browser';
 import { 
   Card,
   CardContent,
@@ -44,6 +44,11 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
+// EmailJS constants
+const EMAILJS_SERVICE_ID = "service_l5whcri"; // Replace with your service ID
+const EMAILJS_TEMPLATE_ID = "template_9rmrpsv"; // Replace with your template ID
+const EMAILJS_PUBLIC_KEY = "xKd0QS_pQRxf677Gy"; // Replace with your public key
+
 const PetDetailsPage = () => {
   const { id } = useParams();
   const { toast } = useToast();
@@ -75,24 +80,49 @@ const PetDetailsPage = () => {
     );
   }
   
-  const handleSubmit = (data: FormData) => {
+  const handleSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     
-    // In a real application, this would send to a backend service
-    // For now we're simulating the request
-    setTimeout(() => {
+    try {
+      // Prepare the email template parameters
+      const templateParams = {
+        to_email: data.email,
+        to_name: data.name,
+        from_name: "Paws & Purrs Adoption Center",
+        pet_name: pet.name,
+        pet_type: pet.type,
+        pet_breed: pet.breed,
+        message: data.message || "No additional message provided",
+        contact_phone: data.phone
+      };
+
+      // Send the email using EmailJS
+      const response = await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        templateParams,
+        EMAILJS_PUBLIC_KEY
+      );
+
+      console.log("Email sent successfully:", response);
+      
       toast({
         title: "Adoption request sent!",
-        description: `Thank you for your interest in adopting ${pet.name}. We'll contact you soon.`,
+        description: `Thank you for your interest in adopting ${pet.name}. A confirmation has been sent to your email.`,
       });
       
       form.reset();
-      setIsSubmitting(false);
       
-      console.log("Adoption request sent for:", pet.name);
-      console.log("Contact details:", data);
-      console.log("In a real app, an email would be sent to the user at:", data.email);
-    }, 1500);
+    } catch (error) {
+      console.error("Error sending email:", error);
+      toast({
+        title: "Error",
+        description: "There was an issue processing your request. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -195,7 +225,7 @@ const PetDetailsPage = () => {
               <CardHeader>
                 <CardTitle>Interested in adopting {pet.name}?</CardTitle>
                 <CardDescription>
-                  Fill out this form and we'll get back to you shortly.
+                  Fill out this form and we'll get back to you shortly. A confirmation email will be sent to your address.
                 </CardDescription>
               </CardHeader>
               <CardContent>
