@@ -14,7 +14,134 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      adoption_requests: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          pet_id: string
+          requester_email: string
+          requester_name: string
+          requester_phone: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          pet_id: string
+          requester_email: string
+          requester_name: string
+          requester_phone?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          pet_id?: string
+          requester_email?: string
+          requester_name?: string
+          requester_phone?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "adoption_requests_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pets: {
+        Row: {
+          age: string
+          breed: string
+          created_at: string
+          description: string | null
+          gender: string
+          health_status: string | null
+          id: string
+          images: string[]
+          is_available: boolean | null
+          name: string
+          size: string
+          temperament: string[] | null
+          type: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          age: string
+          breed: string
+          created_at?: string
+          description?: string | null
+          gender: string
+          health_status?: string | null
+          id?: string
+          images?: string[]
+          is_available?: boolean | null
+          name: string
+          size: string
+          temperament?: string[] | null
+          type: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          age?: string
+          breed?: string
+          created_at?: string
+          description?: string | null
+          gender?: string
+          health_status?: string | null
+          id?: string
+          images?: string[]
+          is_available?: boolean | null
+          name?: string
+          size?: string
+          temperament?: string[] | null
+          type?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
