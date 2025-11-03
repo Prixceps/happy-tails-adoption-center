@@ -1,5 +1,6 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,20 +12,43 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { Session } from "@supabase/supabase-js";
 
 const UploadPage = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [session, setSession] = useState<Session | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     age: "",
     breed: "",
     type: "dog",
     gender: "male",
+    size: "medium",
     description: "",
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (!session) {
+        navigate("/auth");
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        if (!session) {
+          navigate("/auth");
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -40,46 +64,51 @@ const UploadPage = () => {
     });
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImageFile(file);
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!imageFile) {
+
+    if (!session) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to upload a pet.",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+
+    if (!imageUrl) {
       toast({
         title: "Image Required",
-        description: "Please upload an image of the pet.",
+        description: "Please provide an image URL for the pet.",
         variant: "destructive",
       });
       return;
     }
-    
+
     setIsSubmitting(true);
-    
-    // Simulating form submission
-    setTimeout(() => {
-      console.log({
-        ...formData,
-        image: imageFile,
+
+    try {
+      const { error } = await supabase.from("pets").insert({
+        name: formData.name,
+        age: formData.age,
+        breed: formData.breed,
+        type: formData.type,
+        gender: formData.gender,
+        size: formData.size,
+        description: formData.description,
+        images: [imageUrl],
+        uploaded_by: session.user.id,
+        is_available: true,
       });
-      
+
+      if (error) throw error;
+
       toast({
         title: "Pet Added Successfully!",
         description: `${formData.name} has been added to our adoption list.`,
       });
-      
+
       // Reset form
       setFormData({
         name: "",
@@ -87,14 +116,27 @@ const UploadPage = () => {
         breed: "",
         type: "dog",
         gender: "male",
+        size: "medium",
         description: "",
       });
-      setImageFile(null);
-      setImagePreview(null);
-      
+      setImageUrl("");
+
+      setTimeout(() => navigate("/adoption"), 1500);
+    } catch (error: any) {
+      console.error("Error uploading pet:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to upload pet. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1500);
+    }
   };
+
+  if (!session) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -105,11 +147,11 @@ const UploadPage = () => {
               Upload a Pet for Adoption
             </h1>
             <p className="text-lg text-gray-600">
-              Add a new cat or dog to our adoption database. Please provide accurate information 
+              Add a new cat or dog to our adoption database. Please provide accurate information
               to help them find their perfect home.
             </p>
           </div>
-          
+
           <div className="bg-white rounded-lg shadow-md p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -127,7 +169,7 @@ const UploadPage = () => {
                     placeholder="Enter pet name"
                   />
                 </div>
-                
+
                 <div>
                   <label htmlFor="age" className="block text-sm font-medium text-gray-700 mb-1">
                     Age *
@@ -143,16 +185,13 @@ const UploadPage = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
                     Pet Type *
                   </label>
-                  <Select 
-                    value={formData.type}
-                    onValueChange={(value) => handleSelectChange("type", value)}
-                  >
+                  <Select value={formData.type} onValueChange={(value) => handleSelectChange("type", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
@@ -162,15 +201,12 @@ const UploadPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div>
                   <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">
                     Gender *
                   </label>
-                  <Select 
-                    value={formData.gender}
-                    onValueChange={(value) => handleSelectChange("gender", value)}
-                  >
+                  <Select value={formData.gender} onValueChange={(value) => handleSelectChange("gender", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
@@ -180,23 +216,39 @@ const UploadPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div>
-                  <label htmlFor="breed" className="block text-sm font-medium text-gray-700 mb-1">
-                    Breed *
+                  <label htmlFor="size" className="block text-sm font-medium text-gray-700 mb-1">
+                    Size *
                   </label>
-                  <Input
-                    id="breed"
-                    name="breed"
-                    type="text"
-                    required
-                    value={formData.breed}
-                    onChange={handleChange}
-                    placeholder="e.g., Labrador, Siamese"
-                  />
+                  <Select value={formData.size} onValueChange={(value) => handleSelectChange("size", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="small">Small</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="large">Large</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-              
+
+              <div>
+                <label htmlFor="breed" className="block text-sm font-medium text-gray-700 mb-1">
+                  Breed *
+                </label>
+                <Input
+                  id="breed"
+                  name="breed"
+                  type="text"
+                  required
+                  value={formData.breed}
+                  onChange={handleChange}
+                  placeholder="e.g., Labrador, Siamese"
+                />
+              </div>
+
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                   Description *
@@ -211,37 +263,25 @@ const UploadPage = () => {
                   rows={4}
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">
-                  Pet Image *
+                <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-1">
+                  Pet Image URL *
                 </label>
                 <Input
-                  id="image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="mb-2"
+                  id="imageUrl"
+                  type="url"
+                  required
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="https://example.com/pet-image.jpg"
                 />
-                
-                {imagePreview && (
-                  <div className="mt-3 flex justify-center">
-                    <div className="w-40 h-40 relative rounded-lg overflow-hidden">
-                      <img 
-                        src={imagePreview} 
-                        alt="Pet preview" 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
-                )}
+                <p className="text-xs text-gray-500 mt-1">
+                  Enter the URL of the pet's image
+                </p>
               </div>
-              
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="w-full bg-indigo-600 hover:bg-indigo-700"
-              >
+
+              <Button type="submit" disabled={isSubmitting} className="w-full bg-indigo-600 hover:bg-indigo-700">
                 {isSubmitting ? "Uploading..." : "Upload Pet"}
               </Button>
             </form>

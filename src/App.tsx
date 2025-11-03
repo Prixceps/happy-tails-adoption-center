@@ -10,6 +10,7 @@ import PetDetailsPage from "./pages/PetDetailsPage";
 import ContactPage from "./pages/ContactPage";
 import UploadPage from "./pages/UploadPage";
 import NotFound from "./pages/NotFound";
+import AuthPage from "./pages/AuthPage";
 import NavBar from "./components/NavBar";
 import Footer from "./components/Footer";
 
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="/adoption/:id" element={<PetDetailsPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/upload" element={<UploadPage />} />
+              <Route path="/auth" element={<AuthPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

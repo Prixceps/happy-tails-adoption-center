@@ -8,13 +8,14 @@ interface PetCardProps {
 }
 
 const PetCard = ({ pet }: PetCardProps) => {
-  const { id, name, age, breed, gender, type, description, image } = pet;
+  const { id, name, age, breed, gender, type, description, images } = pet;
+  const mainImage = images && images.length > 0 ? images[0] : "/placeholder.svg";
   
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg hover:-translate-y-1">
       <div className="relative h-48">
         <img 
-          src={image} 
+          src={mainImage} 
           alt={name} 
           className="w-full h-full object-cover"
         />

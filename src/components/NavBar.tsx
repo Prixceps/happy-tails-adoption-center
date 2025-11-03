@@ -1,11 +1,39 @@
-
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, Menu, X } from "lucide-react";
+import { Home, Menu, X, LogOut, User } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Session } from "@supabase/supabase-js";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+      }
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -24,9 +52,30 @@ const NavBar = () => {
             <Link to="/" className="text-gray-600 hover:text-indigo-600 font-medium">Home</Link>
             <Link to="/adoption" className="text-gray-600 hover:text-indigo-600 font-medium">Adoption</Link>
             <Link to="/contact" className="text-gray-600 hover:text-indigo-600 font-medium">Contact</Link>
-            <Button asChild variant="outline" className="border-indigo-600 text-indigo-600 hover:bg-indigo-50">
-              <Link to="/upload">Upload Pet</Link>
-            </Button>
+            {session ? (
+              <>
+                <Button asChild variant="outline" className="border-indigo-600 text-indigo-600 hover:bg-indigo-50">
+                  <Link to="/upload">Upload Pet</Link>
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <User className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleSignOut}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <Button asChild variant="default" className="bg-indigo-600 hover:bg-indigo-700">
+                <Link to="/auth">Sign In</Link>
+              </Button>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -66,13 +115,34 @@ const NavBar = () => {
             >
               Contact
             </Link>
-            <Link 
-              to="/upload" 
-              className="block px-4 py-2 text-indigo-600 font-medium hover:bg-indigo-50 rounded"
-              onClick={() => setIsOpen(false)}
-            >
-              Upload Pet
-            </Link>
+            {session ? (
+              <>
+                <Link 
+                  to="/upload" 
+                  className="block px-4 py-2 text-indigo-600 font-medium hover:bg-indigo-50 rounded"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Upload Pet
+                </Link>
+                <button
+                  onClick={() => {
+                    handleSignOut();
+                    setIsOpen(false);
+                  }}
+                  className="block w-full text-left px-4 py-2 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 rounded"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <Link 
+                to="/auth" 
+                className="block px-4 py-2 text-indigo-600 font-medium hover:bg-indigo-50 rounded"
+                onClick={() => setIsOpen(false)}
+              >
+                Sign In
+              </Link>
+            )}
           </div>
         )}
       </div>

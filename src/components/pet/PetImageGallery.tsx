@@ -1,12 +1,13 @@
-
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface PetImageGalleryProps {
-  mainImage: string;
+  images: string[];
   petName: string;
 }
 
-const PetImageGallery = ({ mainImage, petName }: PetImageGalleryProps) => {
+const PetImageGallery = ({ images, petName }: PetImageGalleryProps) => {
+  const mainImage = images && images.length > 0 ? images[0] : "/placeholder.svg";
+  
   return (
     <>
       <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
@@ -20,27 +21,24 @@ const PetImageGallery = ({ mainImage, petName }: PetImageGalleryProps) => {
       </div>
       
       <div className="grid grid-cols-3 gap-3">
-        <div className="aspect-square bg-white rounded-md shadow-sm overflow-hidden">
-          <img 
-            src={mainImage} 
-            alt={`${petName} thumbnail`} 
-            className="w-full h-full object-cover" 
-          />
-        </div>
-        <div className="aspect-square bg-white rounded-md shadow-sm overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1466921009504-428748e9536a"
-            alt={`${petName} playing`} 
-            className="w-full h-full object-cover" 
-          />
-        </div>
-        <div className="aspect-square bg-white rounded-md shadow-sm overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1605369179590-014a88d4560e"
-            alt={`${petName} closeup`} 
-            className="w-full h-full object-cover" 
-          />
-        </div>
+        {images.slice(0, 3).map((image, index) => (
+          <div key={index} className="aspect-square bg-white rounded-md shadow-sm overflow-hidden">
+            <img 
+              src={image} 
+              alt={`${petName} ${index + 1}`} 
+              className="w-full h-full object-cover" 
+            />
+          </div>
+        ))}
+        {images.length === 0 && (
+          <div className="aspect-square bg-white rounded-md shadow-sm overflow-hidden">
+            <img 
+              src="/placeholder.svg" 
+              alt={petName} 
+              className="w-full h-full object-cover" 
+            />
+          </div>
+        )}
       </div>
     </>
   );
