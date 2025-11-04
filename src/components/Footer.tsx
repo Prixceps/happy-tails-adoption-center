@@ -39,7 +39,8 @@ const Footer = () => {
             <address className="text-gray-300 not-italic">
               <p>Prince Raj</p>
               <p>Pune, Maharashtra</p>
-              <p className="mt-2">Email: prrj2026@gmail.com</p>
+              <p className="mt-2">Phone: +91 6201044405</p>
+              <p>Email: prrj2026@gmail.com</p>
             </address>
           </div>
         </div>

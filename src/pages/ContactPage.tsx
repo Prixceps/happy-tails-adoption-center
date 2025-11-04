@@ -72,6 +72,10 @@ const ContactPage = () => {
                     <p className="text-indigo-100">Prince Raj</p>
                   </div>
                   <div>
+                    <h4 className="text-lg font-medium mb-1">Phone</h4>
+                    <p className="text-indigo-100">+91 6201044405</p>
+                  </div>
+                  <div>
                     <h4 className="text-lg font-medium mb-1">Email</h4>
                     <p className="text-indigo-100">prrj2026@gmail.com</p>
                   </div>
