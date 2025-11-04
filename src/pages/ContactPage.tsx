@@ -65,15 +65,15 @@ const ContactPage = () => {
                 <div className="space-y-6">
                   <div>
                     <h4 className="text-lg font-medium mb-1">Address</h4>
-                    <p className="text-indigo-100">123 Pet Avenue, Anytown, AN 12345</p>
+                    <p className="text-indigo-100">Pune, Maharashtra</p>
                   </div>
                   <div>
-                    <h4 className="text-lg font-medium mb-1">Phone</h4>
-                    <p className="text-indigo-100">(123) 456-7890</p>
+                    <h4 className="text-lg font-medium mb-1">Contact Person</h4>
+                    <p className="text-indigo-100">Prince Raj</p>
                   </div>
                   <div>
                     <h4 className="text-lg font-medium mb-1">Email</h4>
-                    <p className="text-indigo-100">info@pawsandpurrs.com</p>
+                    <p className="text-indigo-100">prrj2026@gmail.com</p>
                   </div>
                   <div>
                     <h4 className="text-lg font-medium mb-1">Hours</h4>

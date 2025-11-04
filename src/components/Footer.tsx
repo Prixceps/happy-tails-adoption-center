@@ -37,10 +37,9 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-4">Contact Us</h3>
             <address className="text-gray-300 not-italic">
-              <p>123 Pet Avenue</p>
-              <p>Anytown, AN 12345</p>
-              <p className="mt-2">Phone: (123) 456-7890</p>
-              <p>Email: info@pawsandpurrs.com</p>
+              <p>Prince Raj</p>
+              <p>Pune, Maharashtra</p>
+              <p className="mt-2">Email: prrj2026@gmail.com</p>
             </address>
           </div>
         </div>
